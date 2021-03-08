@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--Basic header tags to establish character sets and Browser use-->
+    <meta charset='UTF-8'>
+    <meta http-equiv='X-UA-Compatible' content="IE=edge">
+    <meta name="description" content="HTML page for analyzing Country Spending Data as part of an individual
+                                      project for DATS6401: Visualization of Complex Data">
+    <meta name="author" content="Rich Gude.  Bootstrap HTM/CSS Contributions from: Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <link rel="stylesheet" href="style.css">
+    <!--Define FavIcon: freely sourced from: https://www.websiteplanet.com/webtools/favicon-generator/ -->
+    <link rel="icon" type="image/png" sizes="16x16" href="/IndividProj/data/favicon.png">
+    <!--Header tag for proper rending and touch zooming on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <!--Header links for Bootstrap page elements-->
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/carousel/">
+    <!-- Bootstrap core CSS -->
+    <link href="assets/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="carousel.css" rel="stylesheet">
+
+        <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+            font-size: 3.5rem;
+            }
+        }
+        </style>
+
+    <!-- Custom styles for this template -->
+    <link href="carousel.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <!--Establish the Title of the Page: required for HTML and shown in the Browser Toolbar-->
+    <title>Spending Growth</title>
+
+    <!--Header links for Google Charts JavaScript elements-->
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <script>
+        // Initialize global variables that will be important for JavaScript changing
+        year_selection = 2008;
+
+        // Establish key-value object for Year Identification
+        var educChangeKey = {1999: 'AE', 2000: 'AF', 2001: 'AG', 2002: 'AH', 2003: 'AI', 2004: 'AJ', 2005: 'AK', 2006: 'AL', 
+                        2007: 'AM', 2008: 'AN', 2009: 'AO', 2010: 'AP', 2011: 'AQ', 2012: 'AR', 2013: 'AS', 2014: 'AT', 
+                        2015: 'AU', 2016: 'AV', 2017: 'AW'};
+        var hlthChangeKey = {2000: 'B', 2001: 'C', 2002: 'D', 2003: 'E', 2004: 'F', 2005: 'G', 2006: 'H', 
+                        2007: 'I', 2008: 'J', 2009: 'K', 2010: 'L', 2011: 'M', 2012: 'N', 2013: 'O', 2014: 'P', 
+                        2015: 'Q', 2016: 'R', 2017: 'S'};
+
+        // Load version 47 since something affects Combo Charts in later versions
+        google.charts.load(46, {'packages':['corechart', 'controls', 'geochart', 'table', 'line']});
+        google.charts.setOnLoadCallback(drawAllSheets);
+
+        // Define CallBack function for constructing all Google graphs
+        function drawAllSheets() {
+            // For Change in Spending (%) GeoCharts
+            drawSheetName("160198585",  "SELECT A," + educChangeKey[year_selection], geo_educ_change_RH);
+            drawSheetName("2134829293",  "SELECT A," + hlthChangeKey[year_selection], geo_hlth_change_RH);
+
+            // For Change in Spending (%) Line Charts
+            drawSheetName("1597878001",  "SELECT A,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,AA,AB,AC,AD,AE,AF,AG,AH,AI,AJ,AK,AL,AM,AN,AO,AP,AQ,AR,AS,AT,AU,AV,AW" +
+                            ' Limit 10', line_educ_RH);
+            drawSheetName("231854543",  "SELECT * Limit 10", line_hlth_RH);
+        } // drawAllSheets
+        
+        // Define function for fetching Google sheet file for viewing and visualizing data
+        function drawSheetName(gid, query, responseHandler){
+            var queryString = encodeURIComponent(query);
+            var query = new google.visualization.Query(
+                // 'spending.xlsx' file generated from dataPrep.py file from accompanying files
+                // Use google sheets sharing to get this link, taking out the 'edit?usp=sharing' tail and replacing with 'gviz/tq'
+                'https://docs.google.com/spreadsheets/d/1sUm7HiqapStM98sQ2Tx0ZxR1nOozhg7z761oDL4Ye0w/gviz/tq?gid=' +
+                + gid + '&headers=1&tq=' + queryString);
+                // Use 'gid' instead of 'sheet', because the latter isn't working for some reason... Improvise, Adapt, Overcome.
+
+            query.send(responseHandler);
+        } // drawSheetName
+
+        // For handling errors with responseHandler functions
+        function checkError(response) {
+            if (response.isError()) {
+                alert('Error in Query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+                return;
+            }
+        }; // checkError
+
+        
+        // Generate Geochart for Education per Capita Spending Growth
+        function geo_educ_change_RH(response) {
+            checkError(response);
+            var qryEGData = response.getDataTable();
+            qryEGData.setColumnLabel(1, '%Change in Per Capita Educational Spending: ' + String(year_selection))
+
+            var options = {
+                animation: {easing: 'inAndOut',
+                            startup: true,
+                            duration: 500},
+                title: 'Percent Change in Educational Spending of Countries in the Year ' + year_selection,
+                colorAxis: {colors: ['#e31b23', '#00853f'],
+                            minValue: -20,
+                            maxValue: 20},
+                displayMode: 'regions',
+                backgroundColor: '#81d4fa',
+                datalessRegionColor: '#DEDADA',
+                defaultColor: '#f5f5f5',
+            };
+
+            var geoEducChart = new google.visualization.GeoChart(document.getElementById('geo_educ_div'));
+            geoEducChart.draw(qryEGData, options);
+        } // geo_educ_change_RH
+
+        // Generate Geochart for Healthcare per Capita Spending Growth
+        function geo_hlth_change_RH(response) {
+            checkError(response);
+            var qryHGData = response.getDataTable();
+            qryHGData.setColumnLabel(1, '%Change in Per Capita Healthcare Spending: ' + String(year_selection))
+
+            var options = {
+                animation: {easing: 'inAndOut',
+                            startup: true,
+                            duration: 500},
+                title: 'Percent Change in Healthcare Spending of Countries in the Year ' + year_selection,
+                colorAxis: {colors: ['#e31b23', '#00853f'],
+                            minValue: -20,
+                            maxValue: 20},
+                displayMode: 'regions',
+                backgroundColor: '#81d4fa',
+                datalessRegionColor: '#DEDADA',
+                defaultColor: '#f5f5f5',
+            };
+
+            var geoHlthChart = new google.visualization.GeoChart(document.getElementById('geo_hlth_div'));
+            geoHlthChart.draw(qryHGData, options);
+        } // geo_hlth_change_RH
+
+        // Generate Line chart for Education Per Capita Spending Change (Fixed, versus relative, change)
+        function line_educ_RH(response) {
+            checkError(response);
+            var qryEducChgData = response.getDataTable();
+
+            /* Uncredited user from Google Groups forum from transposing a Google API query:
+               https://groups.google.com/g/google-visualization-api/c/d_0XLvCEOFs/m/MIvWrV34AwAJ */
+
+            // In order to transpose a Google API query, create a new DataTable Object and populate accordingly
+            var trspEducChgData = new google.visualization.DataTable();
+            // For the ID (first) column for Line Chart, any transposition of data would have the year as the first column
+            trspEducChgData.addColumn('number', 'Year (CE)'); // 
+            // Define column names for each after the first for each country in the selection
+            for (var a = 0; a < qryEducChgData.getNumberOfRows(); a++) {
+                trspEducChgData.addColumn('number', qryEducChgData.getValue(a, 0))
+            }
+            
+            /*
+            The Purpose of the transposed table is to be used for drawing a Google API Line chart;
+            the format of the table columns should be: ['x', 'y'+]
+              Accordingly, 'x' is the year and each 'y' is the country spending data per capita
+            */
+
+            // For each column in the original data query (the new row data):
+            for (var i = 1; i < qryEducChgData.getNumberOfColumns(); i++) {
+                // Initializethe column title (Year)
+                var row = [Number(qryEducChgData.getColumnLabel(i))];
+                // then populate the array will all remaining row values (new column values)
+                for (var j = 0; j < qryEducChgData.getNumberOfRows(); j++) {
+                    row.push(Number(qryEducChgData.getValue(j, i)));}
+                    trspEducChgData.addRow(row);}
+
+            var options = {
+                animation: {easing: 'inAndOut',
+                            startup: true,
+                            duration: 500},
+                // Set a consistent background color for each spending category
+                backgroundColor: '#ECFEEB',
+                title: 'Change in Educational Spending Per Capita:',
+                subtitle: 'Top 10 Countries for Largest Positive Change in 2013',
+                legend: {position: 'bottom',
+                        alignment: 'center'},
+                vAxis: {title: 'Change in Spending Per Capita (current US$ from year prior)',
+                        titleTextStyle: {bold: true},
+                        minValue: 0,
+                        format: 'short'},
+                hAxis: {title: 'Year (CE)',
+                        titleTextStyle: {bold: true},
+                        format: '#'},
+                axes: { x: {
+                    0: {side: 'top'}}}
+            };
+
+            var educLineChart = new google.charts.Line(document.getElementById('educ_line_div'));
+            educLineChart.draw(trspEducChgData, google.charts.Line.convertOptions(options));
+        } // line_educ_RH
+
+        // Generate Line chart for Healthcare Per Capita Spending Change (Fixed, versus relative, change)
+        function line_hlth_RH(response) {
+            checkError(response);
+            var qryHlthChgData = response.getDataTable();
+
+            /* Uncredited user from Google Groups forum from transposing a Google API query:
+               https://groups.google.com/g/google-visualization-api/c/d_0XLvCEOFs/m/MIvWrV34AwAJ */
+
+            // In order to transpose a Google API query, create a new DataTable Object and populate accordingly
+            var trspHlthChgData = new google.visualization.DataTable();
+            // For the ID (first) column for Line Chart, any transposition of data would have the year as the first column
+            trspHlthChgData.addColumn('number', 'Year (CE)'); // 
+            // Define column names for each after the first for each country in the selection
+            for (var a = 0; a < qryHlthChgData.getNumberOfRows(); a++) {
+                trspHlthChgData.addColumn('number', qryHlthChgData.getValue(a, 0))
+            }
+            
+            /*
+            The Purpose of the transposed table is to be used for drawing a Google API Line chart;
+            the format of the table columns should be: ['x', 'y'+]
+              Accordingly, 'x' is the year and each 'y' is the country spending data per capita
+            */
+
+            // For each column in the original data query (the new row data):
+            for (var i = 1; i < qryHlthChgData.getNumberOfColumns(); i++) {
+                // Initializethe column title (Year)
+                var row = [Number(qryHlthChgData.getColumnLabel(i))];
+                // then populate the array will all remaining row values (new column values)
+                for (var j = 0; j < qryHlthChgData.getNumberOfRows(); j++) {
+                    row.push(Number(qryHlthChgData.getValue(j, i)));}
+                    trspHlthChgData.addRow(row);}
+
+            var options = {
+                animation: {easing: 'inAndOut',
+                            startup: true,
+                            duration: 500},
+                // Set a consistent background color for each spending category
+                backgroundColor: '#EBEEFE',
+                title: 'Change in Healthcare Spending Per Capita:',
+                subtitle: 'Top 10 Countries for Largest Positive Change in 2013',
+                legend: {position: 'bottom',
+                        alignment: 'center'},
+                vAxis: {title: 'Change in Spending Per Capita (current US$ from year prior)',
+                        titleTextStyle: {bold: true},
+                        minValue: 0,
+                        format: 'short'},
+                hAxis: {title: 'Year (CE)',
+                        titleTextStyle: {bold: true},
+                        format: '#'},
+                axes: { x: {
+                    0: {side: 'top'}}}
+            };
+
+            var hlthLineChart = new google.charts.Line(document.getElementById('hlth_line_div'));
+            hlthLineChart.draw(trspHlthChgData, google.charts.Line.convertOptions(options));
+        } // line_educ_RH
+
+    </script>
+
+</head>
+<body>
+    <header>
+        <!--Establish Navbar at the top of the page: Use a dark theme, since it's sexy and easy on the eyes-->
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">G-20 Spending Analysis</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+              <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                  <a class="nav-link" href="index.html">Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="spendGDP.html">Country Spending Versus GDP</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="govSpend.html">Government Expenditures</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="perCap.html">Personal Spending</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="spendGrowth.html">Spending Growth</a>
+                </li>
+              </ul>
+              <!-- Investigate Search function later
+              <form class="d-flex">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+              </form>-->
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      <div class="jumbotron text-center">
+        <br>
+        <h1>Per Capita Services Spending Growth</h1>
+        <small>Comparing growth in personal spending in the education and healthcare sectors across countries</small>
+        <br><br>
+    </div>
+
+      <div class="container">
+        <!--Below is the basic structure of a bootstrap grid, with 'row's and 'col' established in that order-->
+        <div class="row">
+            <!--Within each row, each 'col' must be written in the form 'col-&&-##' where:
+                    && = ['xs', 'sm', 'md', 'lg'] based upon the expected viewing hardware ('xs' for phones, 'lg' for desktop screens)
+                    ## = integer value less than 13, with the ## from each column adding up to 12 within each row (max 12 columns)-->
+          <div class="col-sm-12">
+            <h3>Comparing Personal Spending Growth Data: Data, Assumptions, and Preparation</h3>
+            <!--'p' elements have 14px and 1.428 line-height with a bottom border of 10px by default-->
+            <p style="text-align:left">The following elements investigate the education and healthcare personal spending of individual countries against their
+                contemporaries.  All information displayed herein regarding country data was from the <a href='https://data.worldbank.org/indicator'>World
+                Bank datasets</a>.  Calculated in the <a href="perCap.html">Personal Growth</a> tab, the per capita spending values for education and healthcare 
+                were further processed via a Python-script in order to calculate the change in spending for each year. <br><br>
+
+                Accordingly, each file was prepared in such a way as to only display dollar, for the case of GDP information, or percent, for the case of spending 
+                information, values for each country and year catalogged by the World Bank organization, and saved to a Microsoft Excel or Google Sheets-style format.
+                 
+            </p>
+          </div>
+        </div> <!--row 1-->
+
+        <div class="row">
+            <div class="col-sm-12">
+              <h2>Selecting a Year for Analysis</h2>
+              <p style="text-align:left">In order to analyze the inter-country (vice intra-country as seen in the <a href="spendGDP.html">Country Spending Versus GDP</a> and <a href="govSpend.html">Government Expenditures</a> tabs) 
+                  services spending trends, a geochart (for viewing percent change) and line graph (for viewing fixed value change) for each year will be generated from all of the countries that have relevant data and the top 10 growth countries in 2013, respectively.  Since World Bank records for
+                  the spending on various services was not uniformly gathered until the beginning of the millenium (as seen in the healthcare spending datasets), the <b>time frame 
+                    of anaysis is from 2000 to 2017</b> in the Common Era (CE).
+                  <br><br>
+                  The user may choose one of these years for analysis in the panel to the right, and view the results of the analysis below.  All analysis graphs
+                  are color-coded in the background for individual charts, of the data for combination: education spending will be colored
+                  <b>green</b> and healthcare spending will be colored <b>blue</b>.
+              </p>
+            </div>
+        </div> <!--row 2-->
+        <div class="row">
+            <div class="col-sm-12">
+              <h3>Year Selection:</h3><br>
+              <form oninput="result.value=range.value">
+                <p>2000      <input id='range' type="range" name='range' min="2000" max="2017" value="2008" style='border:1px solid rgb(128, 128, 128)'> 2017</p>
+                <output name="result" for="range"><h2>2008</h2></output>
+              </form>
+                <br>
+            </div>
+          </div> <!--row 3-->
+
+        <div class="row">
+          <div class="col-sm-6">
+            <h4>Education Spending Percent Growth by Country:</h4>
+            <div id='geo_educ_div' style='width:"100%"; height:"100%"; border:2px solid black';></div>
+          </div>
+          <div class="col-sm-6">
+            <h4>Healthcare Spending Percent Growth by Country:</h4>
+            <div id='geo_hlth_div' style='width:"100%"; height:"100%"; border:2px solid black';></div>
+          </div>
+        </div> <!--row 4-->
+
+        <div class="row">
+          <div class="col-sm-12">
+            <br>
+            <h5>Comparing Per Capita Spending Change Between Countries</h5>
+            <p><b>Of particular note</b> with the above graphs beyond individual country data for any given year is the fact that certain years 
+              tended to be worse for public services (namely education and healthcare) compared to others: for instance, in the early 2000's, from 2001 to 2007, 
+              the proportion of countries for which per capita spending on education and healthcare was increasing (i.e., green within the 
+              figures) was high, with almost all of Europe, Asia, and North America experiencing growth in one or both sectors over the time period. <br><br>
+            
+            After this period, however, growth was much more sporadic and years with a general decline in per capita spending, such as in 2009 and 2015, were witnessed. <br><br></p>
+          </div>
+        </div> <!--row 5-->
+
+        <div class="row">
+          <div class="col-sm-12">
+            <h4>Education Spending Fixed Value Growth for Top 10 Countries (per 2013):</h4>
+            <div id='educ_line_div' style='width:"100%"; height:500px; border:2px solid black';></div><br>
+          </div>
+        </div> <!--row 5-->
+
+        <div class="row">
+          <div class="col-sm-12">
+            <h4>Healthcare Spending Fixed Value Growth for Top 10 Countries (per 2013):</h4>
+            <div id='hlth_line_div' style='width:"100%"; height:500px; border:2px solid black';></div><br>
+          </div>
+        </div> <!--row 4-->
+
+        <div class="row">
+          <div class="col-sm-12">
+            <br>
+            <h5>Comparing Per Capita Spending Change Between Countries</h5>
+            <p><b>Of particular note</b> with the above graphs (again, beyond individual country data for any given year) is the trend that was identified in 
+              the Geochart figures above, is evidenced in the Line Figures here: the early-to-mid 2000s were a time of good growth for many countries, 
+              with only two (2) of the ten (10) having just a single negative year in either Line Figure; however, after this time, there is considerable spread 
+              within the data showing either equal years of growth and decline in public services per capita spending, or potentially even a skew to more negative 
+              years than positive.<br><br>
+            
+              Again, as discussed in the <a href="perCap.html">Personal Growth</a> tab, there is also a large variance in the educational per capita 
+              spending values (larger fixed values) compared to the healthcare per capita spending values.  This may have been caused by faulty calulations 
+              in converting education spending values as a percent of GDP to fixed per capita spending values. <br><br></p>
+          </div>
+        </div> <!--row 5-->
+
+    </div>
+
+    <script>
+      // On change of slider, update the graph
+      $( "#range" )
+        .on('input', function () {
+          $('.output').val(this.value);
+          year_selection = this.value;
+          drawAllSheets();
+      }).trigger("change");
+
+  </script>
+
+    <!--For Carousel Scripting-->
+    <script src="assets/dist/js/bootstrap.bundle.min.js"></script>
+    </body>

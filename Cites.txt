@@ -1,0 +1,43 @@
+All data comes from WorldBank.org (https://data.worldbank.org/indicator)
+
+Data sets from World Bank used are:
+Climate Change
+  Population, total
+
+Economy
+  GDP (current US$)
+  General government final consumption expenditure (current US$)
+
+Education
+  Government Expenditure on education, total (% of GDP)
+  Government expenditure on education, total (% of government expenditure)
+  Government expenditure per student, primary (% of GDP per capita)
+
+Health
+  Current health expenditure (% of GDP)
+  Domestic general government health expenditure (% of general government expenditure)
+  Current health expenditure per capita (current US$)
+
+Public Sector
+  Military expenditure (% of GDP)
+  Military expenditure (% of general government expenditure)
+
+Social Protection and Labor
+  GDP per person emplyed (constant 2017 PPP $)
+
+&&& &&&&&&&&&&&& &&&
+Assumptions from choice of data sets:
+&&& &&&&&&&&&&&& &&&
+
+- Primary students were chosen to represent all students vice combining multiple data sets to make
+  a graph of all primary, secondary, and tertiary students.
+- % of total spending of the country on healthcare only accounts for government spending on health-
+  care, not private spending; this may affect perceptions of healthcare spending for non-socialized
+  medicine.
+- From the OECD Library, general government final consumption can be broken down into two distinct groups:
+  The first reflects expenditures for collective consumption (defence, justice, etc.) which benefit society
+  in large or whole parts, and are often known as public goods and services. The second relates to
+  expenditures for individual consumption (health care, housing, education, etc.), that reflect expenditures incurred by government
+  on behalf of an individual household.  General govenment final consumption will be used as a proxy then
+  for government expenses related to education, healthcare, and military.
+

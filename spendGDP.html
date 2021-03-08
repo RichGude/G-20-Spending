@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--Basic header tags to establish character sets and Browser use-->
+    <meta charset='UTF-8'>
+    <meta http-equiv='X-UA-Compatible' content="IE=edge">
+    <meta name="description" content="HTML page for analyzing Country Spending Data as part of an individual
+                                      project for DATS6401: Visualization of Complex Data">
+    <meta name="author" content="Rich Gude.  Bootstrap HTM/CSS Contributions from: Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <link rel="stylesheet" href="style.css">
+    <!--Define FavIcon: freely sourced from: https://www.websiteplanet.com/webtools/favicon-generator/ -->
+    <link rel="icon" type="image/png" sizes="16x16" href="/IndividProj/data/favicon.png">
+    <!--Header tag for proper rending and touch zooming on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <!--Header links for Bootstrap page elements-->
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/carousel/">
+    <!-- Bootstrap core CSS -->
+    <link href="assets/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="carousel.css" rel="stylesheet">
+
+        <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+            font-size: 3.5rem;
+            }
+        }
+        </style>
+
+    <!-- Custom styles for this template -->
+    <link href="carousel.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <!--Establish the Title of the Page: required for HTML and shown in the Browser Toolbar-->
+    <title>Spending Percent of GDP</title>
+
+    <!--Header links for Google Charts JavaScript elements-->
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <script>
+        // Initialize global variables that will be important for JavaScript changing
+        gdpCountry = 'Denmark';
+
+        // Load version 47 since something affects Combo Charts in later versions
+        google.charts.load(46, {'packages':['corechart', 'controls', 'geochart', 'table', 'line']});
+        google.charts.setOnLoadCallback(drawAllSheets);
+
+        // Define CallBack function for constructing all Google graphs
+        function drawAllSheets() {
+            // For Each Spending Group versus GDP Bubble Charts
+            drawSheetName("736463367",  "SELECT * Where A = '" + gdpCountry + "'", educ_GDP_RH);
+            drawSheetName("1507061924",  "SELECT * Where A = '" + gdpCountry + "'", hlth_GDP_RH);
+            drawSheetName("1709526737",  "SELECT * Where A = '" + gdpCountry + "'", milt_GDP_RH);
+
+            // For GDP Combo Chart
+            drawSheetName("843747642",  "SELECT * Where A = '" + gdpCountry + "'", combo_GDP_RH);
+        } // drawAllSheets
+        
+        // Define function for fetching Google sheet file for viewing and visualizing data
+        function drawSheetName(gid, query, responseHandler){
+            var queryString = encodeURIComponent(query);
+            var query = new google.visualization.Query(
+                // 'spending.xlsx' file generated from dataPrep.py file from accompanying files
+                // Use google sheets sharing to get this link, taking out the 'edit?usp=sharing' tail and replacing with 'gviz/tq'
+                'https://docs.google.com/spreadsheets/d/1sUm7HiqapStM98sQ2Tx0ZxR1nOozhg7z761oDL4Ye0w/gviz/tq?gid=' +
+                + gid + '&headers=1&tq=' + queryString);
+                // Use 'gid' instead of 'sheet', because the latter isn't working for some reason... Improvise, Adapt, Overcome.
+
+            query.send(responseHandler);
+        } // drawSheetName
+
+        // For handling errors with responseHandler functions
+        function checkError(response) {
+            if (response.isError()) {
+                alert('Error in Query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+                return;
+            }
+        }; // checkError
+
+        // Generate Bubble chart for Education Spending as a percent(%) of GDP against total GDP
+        function educ_GDP_RH(response) {
+            checkError(response);
+            var qryEducGDPData = response.getDataTable();
+
+            /* Uncredited user from Google Groups forum from transposing a Google API query:
+               https://groups.google.com/g/google-visualization-api/c/d_0XLvCEOFs/m/MIvWrV34AwAJ */
+
+            // In order to transpose a Google API query, create a new DataTable Object and populate accordingly
+            var trspEducGDPData = new google.visualization.DataTable();
+            // For the ID (first) column for Bubble Chart, generate a country label (necessary for some graphs)
+            trspEducGDPData.addColumn('string', 'Country');
+            trspEducGDPData.addColumn('number', 'Year (CE)'); // Any transposition of data would have the year as the first column
+            // Define column names for each after the first ('Year')
+            var colName = ['Country GDP (current US$)', 'Education Spending (%GDP)'];
+            
+            // For each row in the original data query:
+            for (var i = 0; i < qryEducGDPData.getNumberOfRows(); i++) {
+                // Add a numerically-formatted column to the new table
+                trspEducGDPData.addColumn('number', colName[i]);}
+
+            // Define a last column for sizing
+            trspEducGDPData.addColumn('number', '');
+            
+            /*
+            The Purpose of the transposed table is to be used for drawing a Google API bubble chart;
+            the format of the table columns should be: ['id', 'x', 'y', 'color', 'size']
+              Accordingly, the 'id' is country name, 'x' is the year, 'y' is the GDP total, and 'color' the %GDP value
+            */
+
+            // For each column in the original data query (the new row data):
+            for (var i = 1; i < qryEducGDPData.getNumberOfColumns(); i++) {
+                // Initialize each row with 'Country' label (always first column and second row spot)
+                var row = [qryEducGDPData.getValue(0, 0)];
+                // Add the column title (Year) as the second row entry
+                row.push(Number(qryEducGDPData.getColumnLabel(i)));
+                // then populate the array will all remaining row values (new column values)
+                //   add in reverse order, since the bubble chart needs a specific outline
+                for (var j = qryEducGDPData.getNumberOfRows() - 1; j >= 0; j--) {
+                    row.push(Number(qryEducGDPData.getValue(j, i)));}
+                row.push(Number(qryEducGDPData.getValue(0, i)));
+                trspEducGDPData.addRow(row);}
+
+            var options = {
+                animation: {easing: 'inAndOut',
+                            startup: true,
+                            duration: 500},
+                bubble: {textStyle: {fontSize: 0.01}},
+                // Set a consistent background color for each spending category
+                backgroundColor: '#ECFEEB',
+                title: 'Country Educational Spending (Percent of GDP): ' + gdpCountry,
+                vAxis: {title: 'Country GDP (current US$)',
+                        titleTextStyle: {bold: true},
+                        minValue: 0,
+                        format: 'short'},
+                hAxis: {title: 'Year (CE)',
+                        minValue: 1995,
+                        maxValue: 2020,
+                        titleTextStyle: {bold: true},
+                        format: '#'},
+                colorAxis: {colors: ['red', 'green'],
+                            minValue: 0,
+                            maxValue: 10}
+            };
+
+            var educGDPchart = new google.visualization.BubbleChart(document.getElementById('educ_GDP_div'));
+            educGDPchart.draw(trspEducGDPData, options);
+        } // educ_GDP_RH
+
+        // Generate Bubble chart for Healthcare Spending as a percent(%) of GDP against total GDP
+        function hlth_GDP_RH(response) {
+            checkError(response);
+            var qryHlthGDPData = response.getDataTable();
+
+            /* Uncredited user from Google Groups forum from transposing a Google API query:
+               https://groups.google.com/g/google-visualization-api/c/d_0XLvCEOFs/m/MIvWrV34AwAJ */
+
+            // In order to transpose a Google API query, create a new DataTable Object and populate accordingly
+            var trspHlthGDPData = new google.visualization.DataTable();
+            // For the ID (first) column for Bubble Chart, generate a country label (necessary for some graphs)
+            trspHlthGDPData.addColumn('string', 'Country');
+            trspHlthGDPData.addColumn('number', 'Year (CE)'); // Any transposition of data would have the year as the first column
+            // Define column names for each after the first ('Year')
+            var colName = ['Country GDP (current US$)', 'Healthcare Spending (%GDP)'];
+            
+            // For each row in the original data query:
+            for (var i = 0; i < qryHlthGDPData.getNumberOfRows(); i++) {
+                // Add a numerically-formatted column to the new table
+                trspHlthGDPData.addColumn('number', colName[i]);}
+
+            // Define a last column for sizing
+            trspHlthGDPData.addColumn('number', '');
+            
+            /*
+            The Purpose of the transposed table is to be used for drawing a Google API bubble chart;
+            the format of the table columns should be: ['id', 'x', 'y', 'color', 'size']
+              Accordingly, the 'id' is country name, 'x' is the year, 'y' is the GDP total, and 'color' the %GDP value
+            */
+
+            // For each column in the original data query (the new row data):
+            for (var i = 1; i < qryHlthGDPData.getNumberOfColumns(); i++) {
+                // Initialize each row with 'Country' label (always first column and second row spot)
+                var row = [qryHlthGDPData.getValue(0, 0)];
+                // Add the column title (Year) as the second row entry
+                row.push(Number(qryHlthGDPData.getColumnLabel(i)));
+                // then populate the array will all remaining row values (new column values)
+                //   add in reverse order, since the bubble chart needs a specific outline
+                for (var j = qryHlthGDPData.getNumberOfRows() - 1; j >= 0; j--) {
+                    row.push(Number(qryHlthGDPData.getValue(j, i)));}
+                row.push(Number(qryHlthGDPData.getValue(0, i)));
+                trspHlthGDPData.addRow(row);}
+
+            var options = {
+                animation: {easing: 'inAndOut',
+                            startup: true,
+                            duration: 500},
+                // Set a consistent background color for each spending category
+                backgroundColor: '#EBEEFE',
+                bubble: {textStyle: {fontSize: 0.01}},
+                title: 'Country Healthcare Spending (Percent of GDP): ' + gdpCountry,
+                vAxis: {title: 'Country GDP (current US$)',
+                        titleTextStyle: {bold: true},
+                        minValue: 0,
+                        format: 'short'},
+                hAxis: {title: 'Year (CE)',
+                        minValue: 1995,
+                        maxValue: 2020,
+                        titleTextStyle: {bold: true},
+                        format: '#'},
+                colorAxis: {colors: ['red', 'green'],
+                            minValue: 0,
+                            maxValue: 10}
+            };
+
+            var hlthGDPchart = new google.visualization.BubbleChart(document.getElementById('hlth_GDP_div'));
+            hlthGDPchart.draw(trspHlthGDPData, options);
+        } // hlth_GDP_RH
+
+        // Generate Bubble chart for Education Spending as a percent(%) of GDP against total GDP
+        function milt_GDP_RH(response) {
+            checkError(response);
+            var qryMiltGDPData = response.getDataTable();
+
+            /* Uncredited user from Google Groups forum from transposing a Google API query:
+               https://groups.google.com/g/google-visualization-api/c/d_0XLvCEOFs/m/MIvWrV34AwAJ */
+
+            // In order to transpose a Google API query, create a new DataTable Object and populate accordingly
+            var trspMiltGDPData = new google.visualization.DataTable();
+            // For the ID (first) column for Bubble Chart, generate a country label (necessary for some graphs)
+            trspMiltGDPData.addColumn('string', 'Country');
+            trspMiltGDPData.addColumn('number', 'Year (CE)'); // Any transposition of data would have the year as the first column
+            // Define column names for each after the first ('Year')
+            var colName = ['Country GDP (current US$)', 'Military Spending (%GDP)'];
+            
+            // For each row in the original data query:
+            for (var i = 0; i < qryMiltGDPData.getNumberOfRows(); i++) {
+                // Add a numerically-formatted column to the new table
+                trspMiltGDPData.addColumn('number', colName[i]);}
+
+            // Define a last column for sizing
+            trspMiltGDPData.addColumn('number', '');
+            
+            /*
+            The Purpose of the transposed table is to be used for drawing a Google API bubble chart;
+            the format of the table columns should be: ['id', 'x', 'y', 'color', 'size']
+              Accordingly, the 'id' is country name, 'x' is the year, 'y' is the GDP total, and 'color' the %GDP value
+            */
+
+            // For each column in the original data query (the new row data):
+            for (var i = 1; i < qryMiltGDPData.getNumberOfColumns(); i++) {
+                // Initialize each row with 'Country' label (always first column and second row spot)
+                var row = [qryMiltGDPData.getValue(0, 0)];
+                // Add the column title (Year) as the second row entry
+                row.push(Number(qryMiltGDPData.getColumnLabel(i)));
+                // then populate the array will all remaining row values (new column values)
+                //   add in reverse order, since the bubble chart needs a specific outline
+                for (var j = qryMiltGDPData.getNumberOfRows() - 1; j >= 0; j--) {
+                    row.push(Number(qryMiltGDPData.getValue(j, i)));}
+                row.push(Number(qryMiltGDPData.getValue(0, i)));
+                trspMiltGDPData.addRow(row);}
+
+            var options = {
+                animation: {easing: 'inAndOut',
+                            startup: true,
+                            duration: 500},
+                // Set a consistent background color for each spending category
+                backgroundColor: '#FEEBEB',
+                bubble: {textStyle: {fontSize: 0.01}},
+                title: 'Country Military Spending (Percent of GDP): ' + gdpCountry,
+                vAxis: {title: 'Country GDP (current US$)',
+                        titleTextStyle: {bold: true},
+                        minValue: 0,
+                        format: 'short'},
+                hAxis: {title: 'Year (CE)',
+                        minValue: 1995,
+                        maxValue: 2020,
+                        titleTextStyle: {bold: true},
+                        format: '#'},
+                colorAxis: {colors: ['red', 'green'],
+                            minValue: 0,
+                            maxValue: 10}
+            };
+
+            var miltGDPchart = new google.visualization.BubbleChart(document.getElementById('milt_GDP_div'));
+            miltGDPchart.draw(trspMiltGDPData, options);
+        } // milt_GDP_RH
+
+        // Generate Combo chart for Total Spending Categories as a percent(%) of GDP and total GDP
+        function combo_GDP_RH(response) {
+            checkError(response);
+            var qryData = response.getDataTable();
+
+            /* Uncredited user from Google Groups forum from transposing a Google API query:
+               https://groups.google.com/g/google-visualization-api/c/d_0XLvCEOFs/m/MIvWrV34AwAJ */
+
+            // In order to transpose a Google API query, create a new DataTable Object and populate accordingly
+            var trspData = new google.visualization.DataTable();
+            // Any transposition of data would have the year as the first column
+            trspData.addColumn('number', 'Year (CE)');
+            // Define column names for each after the first ('Year')
+            var colName = ['Country GDP (current US$)', 'Education (%GDP)', 'Health (%GDP)', 'Military (%GDP)'];
+            
+            // For each row in the original data query:
+            for (var i = 0; i < qryData.getNumberOfRows(); i++) {
+                // Add a numerically-formatted column to the new table
+                trspData.addColumn('number', colName[i]);}
+            
+            /*
+            The Purpose of the transposed table is to be used for drawing a Google API bubble chart;
+            the format of the table columns should be: ['x', 'y1', 'y2', 'y3', 'y4']
+              Accordingly, the 'x' is year, 'y1' total GDP, 'y2' education spending (%GDP), and the other two spending for Health/Military
+            */
+            
+            // For each column in the original data query (the new row data):
+            for (var i = 1; i < qryData.getNumberOfColumns(); i++) {
+                // Initialize each row with 'Year' value
+                var row = [Number(qryData.getColumnLabel(i))];
+                row.push(Number(qryData.getValue(0, i)));
+                // then populate the array will all remaining row values (new column values)
+                for (var j = 1; j < qryData.getNumberOfRows(); j++) {
+                    row.push(Number(qryData.getValue(j, i))/100);}
+                trspData.addRow(row);}
+            
+            var options = {
+                animation: {easing: 'inAndOut',
+                            startup: true,
+                            duration: 500},
+                title: 'Country Spending (Percent of GDP): ' + gdpCountry,
+                axisTitlesPosition: 'out',
+                legend: {maxLines: 2},
+                vAxes: {0:
+                        {title: 'Spending (%GDP)',
+                        titleTextStyle: {bold: true},
+                        minValue: 0,
+                        format: '#%'},
+                        1:
+                        {title: 'Country GDP (current US$)',
+                        titleTextStyle: {bold: true},
+                        minValue: 0,
+                        format: 'short'}},
+                hAxis: {title: 'Year (CE)',
+                        minValue: 1999,
+                        maxValue: 2017,
+                        titleTextStyle: {bold: true},
+                        format: '#'},
+                series: {0: {targetAxisIndex: 1,
+                            type: 'line'},
+                        1: {targetAxisIndex: 0,
+                            type: 'bars',
+                            color: 'green'},
+                        2: {targetAxisIndex: 0,
+                            type: 'bars',
+                            color: 'blue'},
+                        3: {targetAxisIndex: 0,
+                            type: 'bars',
+                            color: 'red'}}
+            };
+
+            var comboGDPchart = new google.visualization.ComboChart(document.getElementById('combo_GDP_div'));
+            comboGDPchart.draw(trspData, options);
+        } // combo_GDP_RH
+
+    </script>
+
+</head>
+<body>
+    <header>
+        <!--Establish Navbar at the top of the page: Use a dark theme, since it's sexy and easy on the eyes-->
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">G-20 Spending Analysis</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+              <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                  <a class="nav-link" href="index.html">Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link active" aria-current="page" href="spendGDP.html">Country Spending Versus GDP</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="govSpend.html">Government Expenditures</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="perCap.html">Personal Spending</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="spendGrowth.html">Spending Growth</a>
+                </li>
+              </ul>
+              <!-- Investigate Search function later
+              <form class="d-flex">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+              </form>-->
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      <div class="jumbotron text-center">
+        <br>
+        <h1>Country Spending in Public Services</h1>
+        <small>Comparing spending in the education, healthcare, and military sectors compared to country GDP</small>
+        <br><br>
+    </div>
+
+      <div class="container">
+        <!--Below is the basic structure of a bootstrap grid, with 'row's and 'col' established in that order-->
+        <div class="row">
+            <!--Within each row, each 'col' must be written in the form 'col-&&-##' where:
+                    && = ['xs', 'sm', 'md', 'lg'] based upon the expected viewing hardware ('xs' for phones, 'lg' for desktop screens)
+                    ## = integer value less than 13, with the ## from each column adding up to 12 within each row (max 12 columns)-->
+          <div class="col-sm-12">
+            <h3>Comparing Spending Data to GDP: Data, Assumptions, and Preparation</h3>
+            <!--'p' elements have 14px and 1.428 line-height with a bottom border of 10px by default-->
+            <p style="text-align:left">The following elements investigate the education, healthcare, and military spending of individual countries against their
+                Gross Domestic Product (GDP).  All information displayed herein regarding country data was from the <a href='https://data.worldbank.org/indicator'>World
+                Bank datasets</a>, displayed by indicator, specifically the following indicators:</p>
+            
+                <ul>
+                    <li><a href="https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?view=chart">GDP (current US$)</a></li>
+                    <li><a href="https://data.worldbank.org/indicator/SE.XPD.TOTL.GD.ZS?view=chart">Government Expenditure on education, total (% of GDP)</a></li>
+                    <li><a href="https://data.worldbank.org/indicator/SH.XPD.CHEX.GD.ZS?view=chart">Current health expenditure (% of GDP)</a></li>
+                    <li><a href="https://data.worldbank.org/indicator/MS.MIL.XPND.GD.ZS?view=chart">Military expenditure (% of GDP)</a></li>
+                </ul>
+                
+                <p style="text-align:left">
+                <b>The data was downloaded as World-Bank-formatted comma-separated-value (csv) files</b>; specifically, this means that the files contained
+                additional line breaks and unnecessary columns and data for the analysis herein.
+                
+                The World Bank files contain information from countries and economic/political unions (e.g., the "Arab World" referring to the members
+                of the League of Arab States, as establised in the metadata commentary) from as far back as 1960 to the present (~2020).  Unfortuneately, for
+                many countries, years of data may be missing from various data sets.  If enough years of data are missing, the analysis of each country
+                is essentially meaningless, and analysis of such countries is not warranted nor recommended.  For countries that have only a few years of missing
+                data, data can be linearly <em>interpolated</em> (though not <em>extrapolated</em>, meaning that data from before or after the first or last known data, respectively,
+                will not be computed).
+                <br><br>
+                
+                Accordingly, each file was prepared in such a way as to only display dollar, for the case of GDP information, or percent, for the case of spending information, values for each country
+                and year catalogged by the World Bank organization, and saved to a Microsoft Excel or Google Sheets-style format.
+                <br>
+            </p>
+          </div>
+        </div> <!--row 1-->
+
+        <div class="row">
+            <div class="col-sm-10">
+              <h2>Selecting a Country for Analysis</h2>
+              <p style="text-align:left">After accounting for data preparation and dropping countries with too little information for proper analysis, the following countries
+                  remain for analysis, selected for size of economy and grouped by relative geography: Denmark, Sweden, Finland, Iceland, United Kingdom,
+                  Germany, Spain, the Russian Federation, Israel, India, Japan, Australia, New Zealand, Mexico, Colombia, and Brazil.
+                  <br><br>
+                  The user may choose one of these for analysis in the panel to the right, and view the results of the analysis below.  All analysis graphs
+                  are color-coded in the background for individual charts, of the data for combination: education spending will be colored
+                  <b>green</b>, healthcare spending will be colored <b>blue</b>, and military spending will be colored <b>red</b>.
+              </p>
+            </div>
+            <div class="col-sm-2">
+              <h3>Country Selection:</h3>
+              <form>
+                <select id="GDP-country">
+                    <option value='Denmark' selected="selected">Denmark</option>
+                    <option value='Sweden'>Sweden</option>
+                    <option value='Finland'>Finland</option>
+                    <option value='Iceland'>Iceland</option>
+                    <option value='United Kingdom'>United Kingdom</option>
+                    <option value='Germany'>Germany</option>
+                    <option value='Spain'>Spain</option>
+                    <option value='Russian Federation'>Russian Federation</option>
+                    <option value='Israel'>Israel</option>
+                    <option value='India'>India</option>
+                    <option value='Japan'>Japan</option>
+                    <option value='Australia'>Australia</option>
+                    <option value='New Zealand'>New Zealand</option>
+                    <option value='Mexico'>Mexico</option>
+                    <option value='Colombia'>Colombia</option>
+                    <option value='Brazil'>Brazil</option>
+                </select>
+            </form>
+            </div>
+          </div> <!--row 2-->
+
+        <div class="row">
+          <div class="col-sm-6">
+            <h3>Country Public Spending</h3>
+            <p class="text-center"><em>In the accompanying Bubble Charts showing Country Spending:</em><br>the color of each bubble represents the absolute
+                spending percent of GDP across all countries; the size of each bubble is relative to only each graph: the smallest bubble showing
+                the lowest spending percent value from each 18-year stretch.
+            </p>
+          </div>
+          <div class="col-sm-6">
+            <div id='educ_GDP_div' style='width:"100%"; height:"100%"; border:2px solid black';></div>
+            <br>
+          </div>
+        </div> <!--row 3-->
+        <div class="row">
+            <div class="col-sm-6">
+                <div id='hlth_GDP_div' style='width:"100%"; height:"100%"; border:2px solid black';></div>
+                <br>
+            </div>
+            <div class="col-sm-6">
+                <div id='milt_GDP_div' style='width:"100%"; height:"100%"; border:2px solid black';></div>
+                <br>
+            </div>
+          </div> <!--row 4-->
+        <div class="row">
+            <div class="col-sm-12">
+                <h3>Comparing Public Spending Levels as a Percent of GDP</h3>
+                <p>With the Combo chart for each country, each spending category for each year is represented adjacent to each other, with their percent values
+                    visible on the left-most, vertical axis; the GDP value of each year is visble on the line portion and calculated on the right-most,
+                    vertical axis. <br><br>
+                </p>
+                <div id='combo_GDP_div' style='width:"100%"; height: 500px; border:2px solid black';></div>
+                <br>
+                <p>Worth noting in each Combo Chart: where the GDP values show growth, but the percent spending values show contraction, the total
+                    level of public spending in that sector (be it education, healthcare, or military) have not actually be decreasing; that is, as a
+                    percent of GDP, when the GDP is rising and the total spending value in current US$ is constant, the spending will actually be shown
+                    to be decreasing. <br><br>
+
+                    Otherwise, general trends from a sampling of the countries in question show relatively constant spending as a percent of GDP in the 
+                    education and military areas and increasing spending (as a percent of GDP and, thereby total spending when GDP is increasing) in the 
+                    healthcare field.
+                </p>
+            </div>
+        </div> <!--row 4-->
+
+
+    </div>
+
+    <script>
+        $( "select" )
+          .change(function () {
+            gdpCountry = $('#GDP-country option:checked').val();
+            drawAllSheets();
+          })
+    </script>
+
+    <!--For Carousel Scripting-->
+    <script src="assets/dist/js/bootstrap.bundle.min.js"></script>
+    </body>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--Basic header tags to establish character sets and Browser use-->
+    <meta charset='UTF-8'>
+    <meta http-equiv='X-UA-Compatible' content="IE=edge">
+    <meta name="description" content="HTML page for analyzing Country Spending Data as part of an individual
+                                      project for DATS6401: Visualization of Complex Data">
+    <meta name="author" content="Rich Gude.  Bootstrap HTM/CSS Contributions from: Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <!--Define FavIcon: freely sourced from: https://www.websiteplanet.com/webtools/favicon-generator/ -->
+    <link rel="icon" type="image/png" sizes="16x16" href="/IndividProj/data/favicon.png">
+    <!--Header tag for proper rending and touch zooming on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <!--Header links for Bootstrap page elements-->
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/carousel/">
+    <!-- Bootstrap core CSS -->
+    <link href="assets/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+
+        <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+            font-size: 3.5rem;
+            }
+        }
+        </style>
+
+    <!-- Custom styles for this template -->
+    <link href="carousel.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>-->
+
+    <!--Establish the Title of the Page: required for HTML and shown in the Browser Toolbar-->
+    <title>G-20 Spending</title>
+
+</head>
+<body>
+    <header>
+        <!--Establish Navbar at the top of the page: Use a dark theme, since it's sexy and easy on the eyes-->
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">G-20 Spending Analysis</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+              <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                  <a class="nav-link active" aria-current="page" href="index.html">Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="spendGDP.html">Country Spending Versus GDP</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="govSpend.html">Government Expenditures</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="perCap.html">Personal Spending</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="spendGrowth.html">Spending Growth</a>
+                </li>
+              </ul>
+              <!-- Investigate Search function later
+              <form class="d-flex">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+              </form>-->
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      <main>
+
+        <div id="myCarousel" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-indicators">
+            <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
+          </div>
+          <div class="carousel-inner">
+            <div class="carousel-item active">
+              <svg class="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false"><img src='images/gdp1.PNG' style='width:"100%"; height: "100%";'></svg>
+      
+              <div class="container">
+                <div class="carousel-caption text-start">
+                  <h1 style="color:rgb(20, 20, 20);">Spending as a Percent of GDP</h1>
+                  <p style="color:rgb(20, 20, 20);">View Comparison of Country Spending Data to Gross Domestic Product (GDP)</p>
+                  <p><a class="btn btn-lg btn-primary" href="spendGDP.html">View Page</a></p>
+                </div>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <svg class="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false"><img src='images/govExpend.PNG' style='width:"100%"; height: "100%";'></svg>
+      
+              <div class="container">
+                <div class="carousel-caption">
+                    <h1 style="color:rgb(20, 20, 20);">Spending as a Percent of Government Expenditure</h1>
+                    <p style="color:rgb(20, 20, 20);">View Comparison of Country Education and Healthcare Spending Data to Military and Overall Government Expenditure</p>
+                  <p><a class="btn btn-lg btn-primary" href="govSpend.html">View Page</a></p>
+                </div>
+              </div>
+            </div>
+            <div class="carousel-item">
+                <svg class="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false"><img src='images/perCap.PNG' style='width:"100%"; height: "100%";'></svg>
+        
+                <div class="container">
+                  <div class="carousel-caption">
+                      <h1 style="color:rgb(20, 20, 20);">Per Person Services Spending</h1>
+                      <p style="color:rgb(20, 20, 20);">View Comparison of Per Capita Spending Data to Per Capita GDP</p>
+                    <p><a class="btn btn-lg btn-primary" href="perCap.html">View Page</a></p>
+                  </div>
+                </div>
+              </div>
+              <div class="carousel-item">
+                <svg class="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false"><img src='images/change1.PNG' style='width:"100%"; height: "100%";'></svg>
+        
+                <div class="container">
+                  <div class="carousel-caption text-end">
+                      <h1 style="color:rgb(20, 20, 20);">Per Person Services Spending Growth</h1>
+                      <p style="color:rgb(20, 20, 20);">View Comparison of Per Capita Spending Growth Data, Percent and Fixed Values</p>
+                    <p><a class="btn btn-lg btn-primary" href="spendGrowth.html">View Page</a></p>
+                  </div>
+                </div>
+              </div>
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+        </div>
+      
+      
+        <!-- Marketing messaging and featurettes
+        ================================================== -->
+        <!-- Wrap the rest of the page in another container to center all the content. -->
+      
+        <div class="container marketing">
+
+            <div class="row">
+                <div class="col-lg-12">
+                  <h1>Project Detail: Individual Project for DATS 6401: Analyses of Country Spending</h1>
+                  <p>In the rest of the pages of this site (accessed via the links or navigation bar above), the Google API and Charts functionality is used to 
+                      illustrate and explore public services spending, namely <b>education</b>, <b>healthcare</b>, and <b>military</b> spending, across a swath
+                      of countries, for the purposes of visually identifying spending relations between each category and country GDP, per capita spending, or 
+                      per capita growth. <br><br>
+
+                      <b>Outcomes and Conclusions:</b> if the purpose of this assignment was to gain familiarity with visual design techniques and practice HTML/CSS and 
+                      Google API functions, the project was a complete success.  Some takeaways for the author include the great functionality of BootStrap modules, from 
+                      which this site was designed, and the easy intuitiveness of both the BootStrap and Google codes. <br><br>
+                      In contrast to this, of particular trouble for the author was the limited functionality of the Google API outside of sheets: effectively, using HTML
+                      code, there is little funcitonality for manipulating Google objects such as DataTables outside of extensive JavaScript handling.  It begs the question, 'Why?'  Why is
+                      the user able to transpose data tables or query multiple Googe Sheets to form a single data table when working from the Google Sheets page, but is not 
+                      able to do the same with a simple, single, predefined JavaScript function (in the case of the querying multiple sheets, it appears this 
+                      functionality is not present at all no matter the JavaScript skill)? <br><br>
+
+                      For this reason, the Google API has limited functionality, certainly over other tools such as visualizing Python or R libraries.  Nevertheless, this 
+                      was a great experience! <br>
+                  </p>
+                  <svg width="100%" height=5px>
+                    <rect width="100%" height="100%" style="fill:rgb(10, 10, 10);stroke-width:3;stroke:rgb(0,0,0)" />
+                  </svg>
+                  <br><br>
+                </div><!-- /.col-lg-12 -->
+              </div><!-- /.row -->
+      
+          <!-- Three columns of text below the carousel -->
+          <div class="row">
+            <div class="col-lg-4">
+              <title>Rich Gude</title><img src='images/Me.jpg' style='width:140px; height:140px; border-radius: 50%; margin-left: auto; margin-right: auto; align-items: center'>
+      
+              <h2><small style="color:rgb(150, 150, 150);">Author:</small> Rich Gude</h2>
+              <p>Honestly, just a pretty cool guy, currently finishing a Masters Degree in Data Science from George Washington University.</p>
+              <p><a class="btn btn-secondary" href="https://github.com/RichGude">Learn More &raquo;</a></p>
+            </div><!-- /.col-lg-4 -->
+            <div class="col-lg-4">
+                <title>World Bank</title><img src='images/wb.jpg' style='width:140px; height:140px; border-radius: 50%; margin-left: auto; margin-right: auto; align-items: center'>
+      
+              <h2>World Bank Data</h2>
+              <p>All data used in the following analyses was taken from the World Bank publically-avaliable datasets on their home page.</p>
+              <p><a class="btn btn-secondary" href="https://data.worldbank.org/indicator?tab=all">View details &raquo;</a></p>
+            </div><!-- /.col-lg-4 -->
+            <div class="col-lg-4">
+                <title>Google Chartsk</title><img src='images/goog.jpg' style='width:140px; height:140px; border-radius: 50%; margin-left: auto; margin-right: auto; align-items: center'>
+      
+              <h2>Google Charts</h2>
+              <p>Charts and illustrations formatted and illustrated via Google's API and Charts functionality.</p>
+              <p><a class="btn btn-secondary" href="https://developers.google.com/chart">View details &raquo;</a></p>
+            </div><!-- /.col-lg-4 -->
+          </div><!-- /.row -->
+      
+        </div><!-- /.container -->
+      
+      
+        <!-- FOOTER -->
+        <footer class="container">
+          <!--<p class="float-end"><a href="#">Back to top</a></p>-->
+          <p>&middot; Special Thanks to BootStrap 5.0.0 for Design CSS and HTML Outline &copy; Probably Them</p>
+        </footer>
+      </main>
+      
+      
+          <script src="assets/dist/js/bootstrap.bundle.min.js"></script>
+      
+            
+        </body>
+      </html>

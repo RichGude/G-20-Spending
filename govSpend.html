@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--Basic header tags to establish character sets and Browser use-->
+    <meta charset='UTF-8'>
+    <meta http-equiv='X-UA-Compatible' content="IE=edge">
+    <meta name="description" content="HTML page for analyzing Country Spending Data as part of an individual
+                                      project for DATS6401: Visualization of Complex Data">
+    <meta name="author" content="Rich Gude.  Bootstrap HTM/CSS Contributions from: Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <link rel="stylesheet" href="style.css">
+    <!--Define FavIcon: freely sourced from: https://www.websiteplanet.com/webtools/favicon-generator/ -->
+    <link rel="icon" type="image/png" sizes="16x16" href="/IndividProj/data/favicon.png">
+    <!--Header tag for proper rending and touch zooming on mobile devices-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <!--Header links for Bootstrap page elements-->
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/carousel/">
+    <!-- Bootstrap core CSS -->
+    <link href="assets/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="carousel.css" rel="stylesheet">
+
+        <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+            font-size: 3.5rem;
+            }
+        }
+        </style>
+
+    <!-- Custom styles for this template -->
+    <link href="carousel.css" rel="stylesheet">
+
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <!--Establish the Title of the Page: required for HTML and shown in the Browser Toolbar-->
+    <title>Government Spending</title>
+
+    <!--Header links for Google Charts JavaScript elements-->
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <script>
+        // Initialize global variables that will be important for JavaScript changing
+        gdpCountry = 'Denmark';
+
+        // Load version 47 since something affects Combo Charts in later versions
+        google.charts.load(46, {'packages':['corechart', 'controls', 'geochart', 'table', 'line']});
+        google.charts.setOnLoadCallback(drawAllSheets);
+
+        // Define CallBack function for constructing all Google graphs
+        function drawAllSheets() {
+
+            // For Expenditure Area Chart
+            drawSheetName("1506375242",  "SELECT * Where A = '" + gdpCountry + "'", area_expend_RH);
+
+        } // drawAllSheets
+        
+        // Define function for fetching Google sheet file for viewing and visualizing data
+        function drawSheetName(gid, query, responseHandler){
+            var queryString = encodeURIComponent(query);
+            var query = new google.visualization.Query(
+                // 'spending.xlsx' file generated from dataPrep.py file from accompanying files
+                // Use google sheets sharing to get this link, taking out the 'edit?usp=sharing' tail and replacing with 'gviz/tq'
+                'https://docs.google.com/spreadsheets/d/1sUm7HiqapStM98sQ2Tx0ZxR1nOozhg7z761oDL4Ye0w/gviz/tq?gid=' +
+                + gid + '&headers=1&tq=' + queryString);
+                // Use 'gid' instead of 'sheet', because the latter isn't working for some reason... Improvise, Adapt, Overcome.
+
+            query.send(responseHandler);
+        } // drawSheetName
+
+        // For handling errors with responseHandler functions
+        function checkError(response) {
+            if (response.isError()) {
+                alert('Error in Query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+                return;
+            }
+        }; // checkError
+
+        // Generate Area chart for Total Government Spending Categories
+        function area_expend_RH(response) {
+            checkError(response);
+            var qryAreaData = response.getDataTable();
+
+            /* Uncredited user from Google Groups forum from transposing a Google API query:
+               https://groups.google.com/g/google-visualization-api/c/d_0XLvCEOFs/m/MIvWrV34AwAJ */
+
+            // In order to transpose a Google API query, create a new DataTable Object and populate accordingly
+            var trspAreaData = new google.visualization.DataTable();
+            // Any transposition of data would have the year as the first column
+            trspAreaData.addColumn('number', 'Year (CE)');
+            // Define column names for each after the first ('Year')
+            var colName = ['Education (%Gov Expend)', 'Healthcare (%Gov Expend)', 'Military (%Gov Expend)', 'All Other Spending (%Gov Expend)'];
+            
+            // For each row in the original data query:
+            for (var i = 0; i < qryAreaData.getNumberOfRows() + 1; i++) {
+                // Add a numerically-formatted column to the new table
+                trspAreaData.addColumn('number', colName[i]);}
+            
+            /*
+            The Purpose of the transposed table is to be used for drawing a Google API bubble chart;
+            the format of the table columns should be: ['x', 'y1', 'y2', 'y3', 'y4']
+              Accordingly, the 'x' is year and 'y1'+ are each spending column
+            */
+            
+            // For each column in the original data query (the new row data):
+            for (var i = 1; i < qryAreaData.getNumberOfColumns(); i++) {
+                // Initialize each row with 'Year' value
+                var row = [Number(qryAreaData.getColumnLabel(i))];
+                // then populate the array will all remaining row values (new column values)
+                for (var j = 0; j < qryAreaData.getNumberOfRows(); j++) {
+                    row.push(Number(qryAreaData.getValue(j, i))/100);}
+                // Add a final 'Other Spending' category (use reduce function to sum up sliced array)
+                row.push(1 - row.slice(1, 4).reduce(function(accumulator, currentValue, currentIndex, array) {
+                                                                return accumulator + currentValue;}));
+                trspAreaData.addRow(row);}
+            console.log(trspAreaData)
+            var options = {
+                animation: {easing: 'inAndOut',
+                            startup: true,
+                            duration: 500},
+                title: 'Government Utility Spending (Percent of Expenditure): ' + gdpCountry,
+                vAxis: {title: 'Spending (%Gov Expenditure)',
+                        titleTextStyle: {bold: true},
+                        minValue: 0,
+                        maxValue: 1.05,
+                        format: '#%',
+                        gridlines: {multiple: 0.2}},
+                hAxis: {title: 'Year (CE)',
+                        minValue: 1999,
+                        maxValue: 2017,
+                        titleTextStyle: {bold: true},
+                        format: '#'},
+                isStacked: 'absolute',
+                series: {
+                        0: {color: 'green'},
+                        1: {color: 'blue'},
+                        2: {color: 'red'},
+                        3: {color: '#D1D0D0',
+                            visibleInLegend: false}}
+            };
+
+            var areaEXPchart = new google.visualization.AreaChart(document.getElementById('area_expend_div'));
+            areaEXPchart.draw(trspAreaData, options);
+        } // area_expend_RH
+
+    </script>
+
+</head>
+<body>
+    <header>
+        <!--Establish Navbar at the top of the page: Use a dark theme, since it's sexy and easy on the eyes-->
+        <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">G-20 Spending Analysis</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+              <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                  <a class="nav-link" href="index.html">Home</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="spendGDP.html">Country Spending Versus GDP</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link active" aria-current="page" href="govSpend.html">Government Expenditures</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="perCap.html">Personal Spending</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="spendGrowth.html">Spending Growth</a>
+                </li>
+              </ul>
+              <!-- Investigate Search function later
+              <form class="d-flex">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+              </form>-->
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      <div class="jumbotron text-center">
+        <br>
+        <h1>Government Spending in Public Services</h1>
+        <small>Comparing Government Expenditures in the education, healthcare, and military sectors against other outflows</small>
+        <br><br>
+    </div>
+
+      <div class="container">
+        <!--Below is the basic structure of a bootstrap grid, with 'row's and 'col' established in that order-->
+        <div class="row">
+            <!--Within each row, each 'col' must be written in the form 'col-&&-##' where:
+                    && = ['xs', 'sm', 'md', 'lg'] based upon the expected viewing hardware ('xs' for phones, 'lg' for desktop screens)
+                    ## = integer value less than 13, with the ## from each column adding up to 12 within each row (max 12 columns)-->
+          <div class="col-sm-12">
+            <h3>Comparing Government Expenditures: Data, Assumptions, and Preparation</h3>
+            <!--'p' elements have 14px and 1.428 line-height with a bottom border of 10px by default-->
+            <p style="text-align:left">The following elements investigate the education, healthcare, and military spending of individual country's governments.
+                All information displayed herein regarding country data was from the <a href='https://data.worldbank.org/indicator'>World
+                Bank datasets</a>, displayed by indicator, specifically the following indicators:</p>
+            
+                <ul>
+                    <li><a href="https://data.worldbank.org/indicator/NE.CON.GOVT.CD?view=chart">General government final consumption expenditure (current US$)</a></li>
+                    <li><a href="https://data.worldbank.org/indicator/SE.XPD.TOTL.GB.ZS?view=chart">Government expenditure on education, total (% of government expenditure)</a></li>
+                    <li><a href="https://data.worldbank.org/indicator/SH.XPD.GHED.GE.ZS?view=chart">Domestic general government health expenditure (% of general government expenditure)</a></li>
+                    <li><a href="https://data.worldbank.org/indicator/MS.MIL.XPND.ZS?view=chart">Military expenditure (% of general government expenditure)</a></li>
+                </ul>
+                
+                <p style="text-align:left">
+                <b>The data was downloaded as World-Bank-formatted comma-separated-value (csv) files</b>; specifically, this means that the files contained
+                additional line breaks and unnecessary columns and data for the analysis herein.
+                
+                The World Bank files contain information from countries and economic/political unions (e.g., the "Arab World" referring to the members
+                of the League of Arab States, as establised in the metadata commentary) from as far back as 1960 to the present (~2020).  Unfortuneately, for
+                many countries, years of data may be missing from various data sets.  If enough years of data are missing, the analysis of each country
+                is essentially meaningless, and analysis of such countries is not warranted nor recommended.  For countries that have only a few years of missing
+                data, data can be linearly <em>interpolated</em> (though not <em>extrapolated</em>, meaning that data from before or after the first or last known data, respectively,
+                will not be computed).
+                <br><br>
+                
+                Accordingly, each file was prepared in such a way as to only display dollar, for the case of GDP information, or percent, for the case of spending information, values for each country
+                and year catalogged by the World Bank organization, and saved to a Microsoft Excel or Google Sheets-style format. <br><br>
+
+                <b>Assumptions:</b><br>The percent of total governmental spending on healthcare only accounts for government spending on health-
+                care, not private spending; this may affect perceptions of healthcare spending for countries with non-socialized medicine. <br>
+              - From the OECD Library, general government final consumption can be broken down into two distinct groups:
+                The first reflects expenditures for collective consumption (defence, justice, etc.) which benefit society
+                in large or whole parts, and are often known as public goods and services. The second relates to
+                expenditures for individual consumption (health care, housing, education, etc.), that reflect expenditures incurred by government
+                on behalf of an individual household.  <b>General govenment final consumption</b> will be used as a proxy then
+                for government expenses related to education, healthcare, and military.
+                <br>
+            </p>
+          </div>
+        </div> <!--row 1-->
+
+        <div class="row">
+            <div class="col-sm-10">
+              <h2>Selecting a Country for Analysis</h2>
+              <p style="text-align:left">After accounting for data preparation and dropping countries with too little information for proper analysis, the following countries
+                  remain for analysis, selected for size of economy and grouped by relative geography: Denmark, Sweden, Finland, Iceland, United Kingdom,
+                  Germany, Spain, the Russian Federation, Israel, India, Japan, Australia, New Zealand, Mexico, Colombia, and Brazil.
+                  <br><br>
+                  The user may choose one of these for analysis in the panel to the right, and view the results of the analysis below.  All analysis graphs
+                  are color-coded in the background for individual charts, of the data for combination: education spending will be colored
+                  <b>green</b>, healthcare spending will be colored <b>blue</b>, and military spending will be colored <b>red</b>.
+              </p>
+            </div>
+            <div class="col-sm-2">
+              <h3>Country Selection:</h3>
+              <form>
+                <select id="GDP-country">
+                    <option value='Denmark' selected="selected">Denmark</option>
+                    <option value='Sweden'>Sweden</option>
+                    <option value='Finland'>Finland</option>
+                    <option value='Iceland'>Iceland</option>
+                    <option value='United Kingdom'>United Kingdom</option>
+                    <option value='Germany'>Germany</option>
+                    <option value='Spain'>Spain</option>
+                    <option value='Russian Federation'>Russian Federation</option>
+                    <option value='Israel'>Israel</option>
+                    <option value='India'>India</option>
+                    <option value='Japan'>Japan</option>
+                    <option value='Australia'>Australia</option>
+                    <option value='New Zealand'>New Zealand</option>
+                    <option value='Mexico'>Mexico</option>
+                    <option value='Colombia'>Colombia</option>
+                    <option value='Brazil'>Brazil</option>
+                </select>
+            </form>
+            </div>
+          </div> <!--row 2-->
+
+        <div class="row">
+            <div class="col-sm-12">
+                <h3>Comparing Government Spending Levels</h3>
+                <p>With the area chart for each country, each differently-colored area represents the percent of each spending category, with all other government
+                  spending being represented by the light-grey category. <br><br>
+                </p>
+                <div id='area_expend_div' style='width:"100%"; height: 500px; border:2px solid black';></div>
+                <br>
+                <p>Worth noting in each Area Chart: perhaps surprisely, the share of government spending on the public services (education, healthcare, and 
+                  military expenditures) is relatively consistent across the sampling of countries, with <b>~35-45% of all governemnt spending</b> going to these 
+                  services.  Just as well, the share of each spending has been relatively constant over the 18-year span with no large (>5%) changes in the 
+                  share of government spending going to each service once metrics were started being tracked and recorded by the World Bank.  <br><br>
+                </p>
+            </div>
+        </div> <!--row 4-->
+
+
+    </div>
+
+    <script>
+        $( "select" )
+          .change(function () {
+            gdpCountry = $('#GDP-country option:checked').val();
+            drawAllSheets();
+          })
+    </script>
+
+    <!--For Carousel Scripting-->
+    <script src="assets/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
